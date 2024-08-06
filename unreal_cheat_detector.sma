@@ -14,6 +14,8 @@
 #include <reapi>
 #endif
 
+// Отключает множественный детект
+#define ONCE_DETECT
 
 /*
    Этапы работы:
@@ -74,12 +76,12 @@ new g_bFiltered4 = true;
 new g_sTempServerCvar[] = "sv_lan_rate";
 
 new g_sCheatNames[MAX_PLAYERS + 1][64];
-new g_bFiltered[MAX_PLAYERS + 1] = {true,...};
 new g_sCurrentCvarForCheck[MAX_PLAYERS + 1][64];
 new g_sCvarName1Backup[MAX_PLAYERS + 1][64];
 new g_sTempSVCvarBackup[MAX_PLAYERS + 1][64];
 new g_bHasProtector[MAX_PLAYERS + 1] = {false,...};
 new g_bInitialIsZero[MAX_PLAYERS + 1] = {false,...};
+new g_bFiltered[MAX_PLAYERS + 1] = {true,...};
 
 new rate_check_value = 99999;
 
@@ -307,11 +309,14 @@ public check_protector2(id, const cvar[], const value[])
 				get_user_name(id,username,charsmax(username));
 				client_print_color(0, print_team_red, "^4[CHEAT DETECTOR]^3: Игрок^1 %s^3 использует чит ^1%s^3! (с фейк кваром)",username, g_sCheatNames[id]);
 				log_amx("[CHEAT DETECTOR]: Игрок %s использует чит %s c фейк кваром, значение квара : %s!",username, g_sCheatNames[id], g_sCvarName1Backup[id]);
+#if defined ONCE_DETECT
+				remove_task(id);
+#endif
 #if defined BAN_CMD_DETECTED_FAKE
 				server_cmd(BAN_CMD_DETECTED_FAKE, get_user_userid(id), g_sCheatNames[id]);
-				#if defined DROP_AFTER_BAN
+#if defined DROP_AFTER_BAN
 				set_task(0.1, "drop_client_delayed", id);
-				#endif
+#endif
 #endif
 			}
 #if defined DETECT_NONSTEAM_FILTERED_CVARS
@@ -321,12 +326,15 @@ public check_protector2(id, const cvar[], const value[])
 				get_user_name(id,username,charsmax(username));
 				client_print_color(0, print_team_red, "^4[CHEAT DETECTOR]^3: Игрок^1 %s^3 возможно использует чит ^1%s^3! (с фейк кваром)",username, g_sCheatNames[id]);
 				log_amx("[CHEAT DETECTOR]: Игрок возможно %s использует чит %s c фейк кваром, значение квара : %s!",username, g_sCheatNames[id], g_sCvarName1Backup[id]);
-				#if defined BAN_CMD_DETECTED_FAKE
+#if defined ONCE_DETECT
+				remove_task(id);
+#endif
+#if defined BAN_CMD_DETECTED_FAKE
 				server_cmd(BAN_CMD_POSSIBLE_FAKE, get_user_userid(id), g_sCheatNames[id]);
-				#if defined DROP_AFTER_BAN
+#if defined DROP_AFTER_BAN
 				set_task(0.1, "drop_client_delayed", id);
-				#endif
-				#endif
+#endif
+#endif
 			}
 #endif
 		}
@@ -340,11 +348,14 @@ public check_protector2(id, const cvar[], const value[])
 			get_user_name(id,username,charsmax(username));
 			client_print_color(0, print_team_red, "^4[CHEAT DETECTOR]^3: Игрок^1 %s^3 использует чит ^1%s^3!",username, g_sCheatNames[id]);
 			log_amx("[CHEAT DETECTOR]: Игрок %s использует чит %s!",username, g_sCheatNames[id]);
+#if defined ONCE_DETECT
+			remove_task(id);
+#endif
 #if defined BAN_CMD_DETECTED_FAKE
 			server_cmd(BAN_CMD_DETECTED, get_user_userid(id), g_sCheatNames[id]);
-			#if defined DROP_AFTER_BAN
+#if defined DROP_AFTER_BAN
 			set_task(0.1, "drop_client_delayed", id);
-			#endif
+#endif
 #endif
 		}
 		else if (!g_bFiltered[id])
@@ -353,11 +364,14 @@ public check_protector2(id, const cvar[], const value[])
 			get_user_name(id,username,charsmax(username));
 			client_print_color(0,print_team_red, "^4[CHEAT DETECTOR]^3: Игрок^1 %s^3 возможно использует чит ^1%s^3!",username, g_sCheatNames[id]);
 			log_amx("[CHEAT DETECTOR]: Игрок %s возможно использует чит %s![99%%]",username, g_sCheatNames[id]);
+#if defined ONCE_DETECT
+			remove_task(id);
+#endif
 #if defined BAN_CMD_DETECTED_FAKE
 			server_cmd(BAN_CMD_POSSIBLE, get_user_userid(id), g_sCheatNames[id]);
-			#if defined DROP_AFTER_BAN
+#if defined DROP_AFTER_BAN
 			set_task(0.1, "drop_client_delayed", id);
-			#endif
+#endif
 #endif
 		}
 	}
