@@ -8,7 +8,7 @@
 
 
 //#define DROP_AFTER_BAN
-//#define DETECT_NONSTEAM_FILTERED_CVARS
+#define DETECT_NONSTEAM_FILTERED_CVARS
 
 #if defined DETECT_NONSTEAM_FILTERED_CVARS || defined DROP_AFTER_BAN
 #include <reapi>
@@ -29,17 +29,17 @@
 */
 
 
-// Установите свои строки для банов (%d это userid игрока) или закомментируйте ненужный #define
+// Установите свои строки для банов (%d это userid игрока) или расскоментируйте нужные #define
 // BAN_CMD_POSSIBLE_FAKE может давать ложные когда игрок играет с нонстим сборки в стим версию игры
-// для включения детекта BAN_CMD_POSSIBLE_FAKE можете расскоментировать строку DETECT_NONSTEAM_FILTERED_CVARS
+// для отключения детекта BAN_CMD_POSSIBLE_FAKE можете закомментировать строку DETECT_NONSTEAM_FILTERED_CVARS
 
-#define BAN_CMD_DETECTED_FAKE "amx_ban 1000 #%d ^"%s HACK DETECTED[FAKE CVAR]^""
-#define BAN_CMD_POSSIBLE_FAKE "amx_ban 1000 #%d ^"%s HACK POSSIBLE DETECTED[FAKE CVAR]^""
-#define BAN_CMD_DETECTED "amx_ban 1000 #%d ^"%s HACK DETECTED^""
-#define BAN_CMD_POSSIBLE "amx_ban 1000 #%d ^"%s HACK DETECTED POSSIBLE^""
+//#define BAN_CMD_DETECTED_FAKE "amx_ban 1000 #%d ^"%s HACK DETECTED[FAKE CVAR]^""
+//#define BAN_CMD_POSSIBLE_FAKE "amx_ban 1000 #%d ^"%s HACK POSSIBLE DETECTED[FAKE CVAR]^""
+//#define BAN_CMD_DETECTED "amx_ban 1000 #%d ^"%s HACK DETECTED^""
+//#define BAN_CMD_POSSIBLE "amx_ban 1000 #%d ^"%s HACK DETECTED POSSIBLE^""
 
 new const Plugin_sName[] = "Unreal Cheat Detector";
-new const Plugin_sVersion[] = "3.0";
+new const Plugin_sVersion[] = "3.1";
 new const Plugin_sAuthor[] = "Karaulov";
 
 // Квар по умолчанию host_limitlocal не защищен cl_filterstuffcmd и может изменяться
@@ -201,7 +201,7 @@ public check_detect_cvar_defaultvalue(id, const cvar[], const value[])
 	// Если же значение 0 то мы на всякий случай тоже проверяем, вдруг читер решил нас обмануть
 	// Сохраняем старое значение g_sCurrentCvarForCheck[id] что бы потом вернуть все назад :)
 
-	log_amx("id1 = %d, cvar = %s, value = %s", id, cvar, value);
+	//log_amx("id1 = %d, cvar = %s, value = %s", id, cvar, value);
 
 	copy(g_sCvarName1Backup[id],charsmax(g_sCvarName1Backup[]),value);
 
@@ -235,7 +235,7 @@ public check_detect_cvar_value2(id, const cvar[], const value[])
 	if (!is_user_connected(id))
 		return;
 	
-	log_amx("id2 = %d, cvar = %s, value = %s", id, cvar, value);
+	//log_amx("id2 = %d, cvar = %s, value = %s", id, cvar, value);
 
 	// Восстановим назад значение квара g_sCurrentCvarForCheck[id]
 	WriteClientStuffText(id, "%s %s;",g_sCurrentCvarForCheck[id],g_sCvarName1Backup[id]);
@@ -262,7 +262,7 @@ public check_protector_default(id, const cvar[], const value[])
 	if (!is_user_connected(id))
 		return;
 
-	log_amx("id3 = %d, cvar = %s, value = %s", id, cvar, value);
+	//log_amx("id3 = %d, cvar = %s, value = %s", id, cvar, value);
 
 	// Сразу делаем обход ложного rate_check_value если вдруг совпадение
 	if (str_to_float(value) == float(rate_check_value))
@@ -289,7 +289,7 @@ public check_protector2(id, const cvar[], const value[])
 	if (!is_user_connected(id))
 		return;
 
-	log_amx("id4 = %d, cvar = %s, value = %s, prot = %i, zero = %i, filtered = %i", id, cvar, value, g_bHasProtector[id], g_bInitialIsZero[id], g_bFiltered[id]);
+	//log_amx("id4 = %d, cvar = %s, value = %s, prot = %i, zero = %i, filtered = %i", id, cvar, value, g_bHasProtector[id], g_bInitialIsZero[id], g_bFiltered[id]);
 
 	// Восстановим назад значение квара g_sCurrentCvarForCheck[id]
 	WriteClientStuffText(id, "%s %s;",g_sTempServerCvar,g_sTempSVCvarBackup[id]);
