@@ -41,7 +41,7 @@
 //#define BAN_CMD_POSSIBLE "amx_ban 1000 #%d ^"%s HACK DETECTED POSSIBLE^""
 
 new const Plugin_sName[] = "Unreal Cheat Detector";
-new const Plugin_sVersion[] = "3.2";
+new const Plugin_sVersion[] = "3.3";
 new const Plugin_sAuthor[] = "Karaulov";
 
 // Квар по умолчанию host_limitlocal не защищен cl_filterstuffcmd и может изменяться
