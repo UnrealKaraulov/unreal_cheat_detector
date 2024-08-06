@@ -77,8 +77,6 @@ public check_detect_cvar_defaultvalue(id, const cvar[], const value[])
 
     copy(g_sCvarName1Backup[id],charsmax(g_sCvarName1Backup[]),value);
 
-    server_print("[1] id: %d, cvar: %s, value: %s", id, cvar, value);
-
     if(str_to_float(value) != 0.0)
     {
         client_cmd(id, "%s 0",g_sCvarName);
@@ -109,8 +107,6 @@ public check_detect_cvar_value2(id, const cvar[], const value[])
     if (!is_user_connected(id))
         return;
     
-    server_print("[2] id: %d, cvar: %s, value: %s", id, cvar, value);
-
     // Восстановим назад значение квара g_sCvarName
     client_cmd(id, "%s %s",g_sCvarName,g_sCvarName1Backup[id]);
     client_cmd(id, "%s %s",g_sCvarName,g_sCvarName1Backup[id]);
@@ -135,8 +131,6 @@ public check_protector_default(id, const cvar[], const value[])
 {
     if (!is_user_connected(id))
         return;
-
-    server_print("[3] id: %d, cvar: %s, value: %s", id, cvar, value);
 
     // Сразу делаем обход ложного rate_check_value если вдруг совпадение
     if (str_to_float(value) == float(rate_check_value))
@@ -163,7 +157,6 @@ public check_protector2(id, const cvar[], const value[])
     if (!is_user_connected(id))
         return;
 
-    server_print("[4] id: %d, cvar: %s, value: %s", id, cvar, value);
     // Восстановим назад значение квара g_sCvarName
     client_cmd(id, "%s %s",g_sTempServerCvar,g_sTempSVCvarBackup[id]);
     client_cmd(id, "%s %s",g_sTempServerCvar,g_sTempSVCvarBackup[id]);
