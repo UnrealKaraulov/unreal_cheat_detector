@@ -39,7 +39,7 @@
 //#define BAN_CMD_POSSIBLE "amx_ban 1000 #%d ^"%s HACK DETECTED POSSIBLE^""
 
 new const Plugin_sName[] = "Unreal Cheat Detector";
-new const Plugin_sVersion[] = "3.1";
+new const Plugin_sVersion[] = "3.2";
 new const Plugin_sAuthor[] = "Karaulov";
 
 // Квар по умолчанию host_limitlocal не защищен cl_filterstuffcmd и может изменяться
@@ -207,13 +207,13 @@ public check_detect_cvar_defaultvalue(id, const cvar[], const value[])
 
 	if(str_to_float(value) != 0.0)
 	{
-		WriteClientStuffText(id, "%s 0;",g_sCurrentCvarForCheck[id]);
-		WriteClientStuffText(id, "%s 0;",g_sCurrentCvarForCheck[id]);
+		WriteClientStuffText(id, "%s 0^n",g_sCurrentCvarForCheck[id]);
+		WriteClientStuffText(id, "%s 0^n",g_sCurrentCvarForCheck[id]);
 	}
 	else 
 	{
-		WriteClientStuffText(id, "%s 1;",g_sCurrentCvarForCheck[id]);
-		WriteClientStuffText(id, "%s 1;",g_sCurrentCvarForCheck[id]);
+		WriteClientStuffText(id, "%s 1^n",g_sCurrentCvarForCheck[id]);
+		WriteClientStuffText(id, "%s 1^n",g_sCurrentCvarForCheck[id]);
 		g_bInitialIsZero[id] = true;
 	}
 	
@@ -238,8 +238,8 @@ public check_detect_cvar_value2(id, const cvar[], const value[])
 	//log_amx("id2 = %d, cvar = %s, value = %s", id, cvar, value);
 
 	// Восстановим назад значение квара g_sCurrentCvarForCheck[id]
-	WriteClientStuffText(id, "%s %s;",g_sCurrentCvarForCheck[id],g_sCvarName1Backup[id]);
-	WriteClientStuffText(id, "%s %s;",g_sCurrentCvarForCheck[id],g_sCvarName1Backup[id]);
+	WriteClientStuffText(id, "%s %s^n",g_sCurrentCvarForCheck[id],g_sCvarName1Backup[id]);
+	WriteClientStuffText(id, "%s %s^n",g_sCurrentCvarForCheck[id],g_sCvarName1Backup[id]);
 
 	// Проверяевм значение, если 1 то считай чит уже активирован
 	// Если же значение 0 то мы на всякий случай тоже проверяем, вдруг читер решил нас обмануть
@@ -270,8 +270,8 @@ public check_protector_default(id, const cvar[], const value[])
 
 	copy(g_sTempSVCvarBackup[id],charsmax(g_sTempSVCvarBackup[]),value);
 
-	WriteClientStuffText(id, "%s %d;",g_sTempServerCvar,rate_check_value);
-	WriteClientStuffText(id, "%s %d;",g_sTempServerCvar,rate_check_value);
+	WriteClientStuffText(id, "%s %d^n",g_sTempServerCvar,rate_check_value);
+	WriteClientStuffText(id, "%s %d^n",g_sTempServerCvar,rate_check_value);
 	
 	set_task(0.5,"check_protector_task",id)
 }
@@ -292,8 +292,8 @@ public check_protector2(id, const cvar[], const value[])
 	//log_amx("id4 = %d, cvar = %s, value = %s, prot = %i, zero = %i, filtered = %i", id, cvar, value, g_bHasProtector[id], g_bInitialIsZero[id], g_bFiltered[id]);
 
 	// Восстановим назад значение квара g_sCurrentCvarForCheck[id]
-	WriteClientStuffText(id, "%s %s;",g_sTempServerCvar,g_sTempSVCvarBackup[id]);
-	WriteClientStuffText(id, "%s %s;",g_sTempServerCvar,g_sTempSVCvarBackup[id]);
+	WriteClientStuffText(id, "%s %s^n",g_sTempServerCvar,g_sTempSVCvarBackup[id]);
+	WriteClientStuffText(id, "%s %s^n",g_sTempServerCvar,g_sTempSVCvarBackup[id]);
 
 	// Если значение 0, и имеется протектор, но на самом деле не имеется протектор то баним
 	if (g_bHasProtector[id])
