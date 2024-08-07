@@ -41,7 +41,7 @@
 //#define BAN_CMD_POSSIBLE "amx_ban 1000 #%d ^"%s HACK DETECTED POSSIBLE^""
 
 new const Plugin_sName[] = "Unreal Cheat Detector";
-new const Plugin_sVersion[] = "3.4";
+new const Plugin_sVersion[] = "3.5";
 new const Plugin_sAuthor[] = "Karaulov";
 
 
@@ -195,7 +195,7 @@ public check_detect_cvar_defaultvalue(id, const cvar[], const value[])
 	// Если же значение 0 то мы на всякий случай тоже проверяем, вдруг читер решил нас обмануть
 	// Сохраняем старое значение g_sCurrentCvarForCheck[id] что бы потом вернуть все назад :)
 
-	log_amx("id1 = %d, cvar = %s, value = %s", id, cvar, value);
+	//log_amx("id1 = %d, cvar = %s, value = %s", id, cvar, value);
 
 	copy(g_sCvarName1Backup[id],charsmax(g_sCvarName1Backup[]),value);
 
@@ -228,7 +228,7 @@ public check_detect_cvar_value2(id, const cvar[], const value[])
 	if (!is_user_connected(id))
 		return;
 	
-	log_amx("id2 = %d, cvar = %s, value = %s", id, cvar, value);
+	//log_amx("id2 = %d, cvar = %s, value = %s", id, cvar, value);
 
 	// Восстановим назад значение квара g_sCurrentCvarForCheck[id]
 	WriteClientStuffText(id, "%s %s^n",g_sCurrentCvarForCheck[id],g_sCvarName1Backup[id]);
@@ -248,7 +248,7 @@ public check_protector_default(id, const cvar[], const value[])
 	if (!is_user_connected(id))
 		return;
 
-	log_amx("id3 = %d, cvar = %s, value = %s", id, cvar, value);
+	//log_amx("id3 = %d, cvar = %s, value = %s", id, cvar, value);
 
 	// Сразу делаем обход ложного rate_check_value если вдруг совпадение
 	if (str_to_float(value) == float(rate_check_value))
@@ -275,7 +275,7 @@ public check_protector2(id, const cvar[], const value[])
 	if (!is_user_connected(id))
 		return;
 
-	log_amx("id4 = %d, cvar = %s, value = %s, filtered = %i", id, cvar, value, g_bFiltered[id]);
+	//log_amx("id4 = %d, cvar = %s, value = %s, filtered = %i", id, cvar, value, g_bFiltered[id]);
 
 	// Восстановим назад значение квара g_sCurrentCvarForCheck[id]
 	WriteClientStuffText(id, "%s %s^n",g_sTempServerCvar,g_sTempSVCvarBackup[id]);
