@@ -7,7 +7,7 @@
 
 
 
-//#define DROP_AFTER_BAN
+#define DROP_AFTER_BAN
 #define DETECT_NONSTEAM_FILTERED_CVARS
 
 #if defined DETECT_NONSTEAM_FILTERED_CVARS || defined DROP_AFTER_BAN
@@ -44,6 +44,7 @@ new const Plugin_sName[] = "Unreal Cheat Detector";
 new const Plugin_sVersion[] = "3.3";
 new const Plugin_sAuthor[] = "Karaulov";
 
+
 // Квар по умолчанию host_limitlocal не защищен cl_filterstuffcmd и может изменяться
 // так что если квар не изменяется то значит стоит байпас на детект, новая версия это учитывает
 new g_sCvarName1[] = "host_limitlocal";
@@ -71,16 +72,15 @@ new g_sCheatName4[] = "GENERIC 2";
 new g_bFiltered4 = true;
 
 // Сюда вписать любой квар который считаете безопасным для изменения что бы не получить бан от раскруток за его модификацию
-// Он должен восстанавливаться после рестарта, и не влиять на игровой процесс
+// Он должен восстанавливаться после рестарта, и не влиять на игровой процесс (на всякий случай)
 // Он должен быть защищен cl_filterstuffcmd
-new g_sTempServerCvar[] = "sv_lan_rate";
+// ЭТОТ КВАР ВОССТАНАВЛИВАЕТСЯ В СЛЕДУЮЩЕМ КАДРЕ :)
+new g_sTempServerCvar[] = "host_framerate";
 
 new g_sCheatNames[MAX_PLAYERS + 1][64];
 new g_sCurrentCvarForCheck[MAX_PLAYERS + 1][64];
 new g_sCvarName1Backup[MAX_PLAYERS + 1][64];
 new g_sTempSVCvarBackup[MAX_PLAYERS + 1][64];
-new g_bHasProtector[MAX_PLAYERS + 1] = {false,...};
-new g_bInitialIsZero[MAX_PLAYERS + 1] = {false,...};
 new g_bFiltered[MAX_PLAYERS + 1] = {true,...};
 
 new rate_check_value = 99999;
@@ -137,8 +137,6 @@ public init_hack_cvar1_check(id)
 	copy(g_sCurrentCvarForCheck[id],charsmax(g_sCurrentCvarForCheck[]),g_sCvarName1);
 	copy(g_sCheatNames[id],charsmax(g_sCheatNames[]),g_sCheatName1);
 
-	g_bHasProtector[id] = false;
-	g_bInitialIsZero[id] = false;
 	g_bFiltered[id] = g_bFiltered1;
 
 	if (!is_user_connected(id))
@@ -155,8 +153,6 @@ public init_hack_cvar2_check(id)
 	copy(g_sCurrentCvarForCheck[id],charsmax(g_sCurrentCvarForCheck[]),g_sCvarName2);
 	copy(g_sCheatNames[id],charsmax(g_sCheatNames[]),g_sCheatName2);
 
-	g_bHasProtector[id] = false;
-	g_bInitialIsZero[id] = false;
 	g_bFiltered[id] = g_bFiltered2;
 
 	// Запрашиваем значение квара g_sCurrentCvarForCheck
@@ -171,8 +167,6 @@ public init_hack_cvar3_check(id)
 	copy(g_sCurrentCvarForCheck[id],charsmax(g_sCurrentCvarForCheck[]),g_sCvarName3);
 	copy(g_sCheatNames[id],charsmax(g_sCheatNames[]),g_sCheatName3);
 
-	g_bHasProtector[id] = false;
-	g_bInitialIsZero[id] = false;
 	g_bFiltered[id] = g_bFiltered3;
 
 	// Запрашиваем значение квара g_sCurrentCvarForCheck
@@ -187,8 +181,6 @@ public init_hack_cvar4_check(id)
 	copy(g_sCurrentCvarForCheck[id],charsmax(g_sCurrentCvarForCheck[]),g_sCvarName4);
 	copy(g_sCheatNames[id],charsmax(g_sCheatNames[]),g_sCheatName4);
 
-	g_bHasProtector[id] = false;
-	g_bInitialIsZero[id] = false;
 	g_bFiltered[id] = g_bFiltered4;
 
 	// Запрашиваем значение квара g_sCurrentCvarForCheck
@@ -203,7 +195,7 @@ public check_detect_cvar_defaultvalue(id, const cvar[], const value[])
 	// Если же значение 0 то мы на всякий случай тоже проверяем, вдруг читер решил нас обмануть
 	// Сохраняем старое значение g_sCurrentCvarForCheck[id] что бы потом вернуть все назад :)
 
-	//log_amx("id1 = %d, cvar = %s, value = %s", id, cvar, value);
+	log_amx("id1 = %d, cvar = %s, value = %s", id, cvar, value);
 
 	copy(g_sCvarName1Backup[id],charsmax(g_sCvarName1Backup[]),value);
 
@@ -216,11 +208,10 @@ public check_detect_cvar_defaultvalue(id, const cvar[], const value[])
 	{
 		WriteClientStuffText(id, "%s 1^n",g_sCurrentCvarForCheck[id]);
 		WriteClientStuffText(id, "%s 1^n",g_sCurrentCvarForCheck[id]);
-		g_bInitialIsZero[id] = true;
 	}
 	
 	// Отложенный запуск проверки что бы чит успел сделать свои дела
-	set_task(0.5,"check_detect_cvar_value_task",id)
+	set_task(0.11,"check_detect_cvar_value_task",id)
 }
 
 // Отложенный запуск проверки что бы чит успел сделать свои дела
@@ -237,7 +228,7 @@ public check_detect_cvar_value2(id, const cvar[], const value[])
 	if (!is_user_connected(id))
 		return;
 	
-	//log_amx("id2 = %d, cvar = %s, value = %s", id, cvar, value);
+	log_amx("id2 = %d, cvar = %s, value = %s", id, cvar, value);
 
 	// Восстановим назад значение квара g_sCurrentCvarForCheck[id]
 	WriteClientStuffText(id, "%s %s^n",g_sCurrentCvarForCheck[id],g_sCvarName1Backup[id]);
@@ -245,15 +236,8 @@ public check_detect_cvar_value2(id, const cvar[], const value[])
 
 	// Проверяевм значение, если 1 то считай чит уже активирован
 	// Если же значение 0 то мы на всякий случай тоже проверяем, вдруг читер решил нас обмануть
-	if(g_bInitialIsZero[id])
-	{
-		if (equal(g_sCvarName1Backup[id], value))
-		{
-			g_bHasProtector[id] = true;
-			query_client_cvar(id, g_sTempServerCvar, "check_protector_default");
-		}
-	}
-	else if (str_to_float(value) != 0.0)
+
+	if (equal(g_sCvarName1Backup[id], value))
 	{
 		query_client_cvar(id, g_sTempServerCvar, "check_protector_default");
 	}
@@ -264,7 +248,7 @@ public check_protector_default(id, const cvar[], const value[])
 	if (!is_user_connected(id))
 		return;
 
-	//log_amx("id3 = %d, cvar = %s, value = %s", id, cvar, value);
+	log_amx("id3 = %d, cvar = %s, value = %s", id, cvar, value);
 
 	// Сразу делаем обход ложного rate_check_value если вдруг совпадение
 	if (str_to_float(value) == float(rate_check_value))
@@ -275,7 +259,7 @@ public check_protector_default(id, const cvar[], const value[])
 	WriteClientStuffText(id, "%s %d^n",g_sTempServerCvar,rate_check_value);
 	WriteClientStuffText(id, "%s %d^n",g_sTempServerCvar,rate_check_value);
 	
-	set_task(0.5,"check_protector_task",id)
+	set_task(0.01,"check_protector_task",id)
 }
 
 public check_protector_task(id)
@@ -291,100 +275,71 @@ public check_protector2(id, const cvar[], const value[])
 	if (!is_user_connected(id))
 		return;
 
-	//log_amx("id4 = %d, cvar = %s, value = %s, prot = %i, zero = %i, filtered = %i", id, cvar, value, g_bHasProtector[id], g_bInitialIsZero[id], g_bFiltered[id]);
+	log_amx("id4 = %d, cvar = %s, value = %s, filtered = %i", id, cvar, value, g_bFiltered[id]);
 
 	// Восстановим назад значение квара g_sCurrentCvarForCheck[id]
 	WriteClientStuffText(id, "%s %s^n",g_sTempServerCvar,g_sTempSVCvarBackup[id]);
 	WriteClientStuffText(id, "%s %s^n",g_sTempServerCvar,g_sTempSVCvarBackup[id]);
 
 	// Если значение 0, и имеется протектор, но на самом деле не имеется протектор то баним
-	if (g_bHasProtector[id])
+	
+	if(str_to_float(value) == float(rate_check_value))
 	{
-		if (g_bInitialIsZero[id])
-		{
-			if (str_to_float(value) == float(rate_check_value))
-			{
-				// Если нет протектора на g_sTempServerCvar то...
-				new username[33];
-				get_user_name(id,username,charsmax(username));
-				client_print_color(0, print_team_red, "^4[CHEAT DETECTOR]^3: Игрок^1 %s^3 использует чит ^1%s^3! (с фейк кваром)",username, g_sCheatNames[id]);
-				log_amx("[CHEAT DETECTOR]: Игрок %s использует чит %s c фейк кваром, значение квара : %s!",username, g_sCheatNames[id], g_sCvarName1Backup[id]);
+		// Если нет протектора на g_sTempServerCvar то...
+		new username[33];
+		get_user_name(id,username,charsmax(username));
+		client_print_color(0, print_team_red, "^4[CHEAT DETECTOR]^3: Игрок^1 %s^3 использует чит ^1%s^3!",username, g_sCheatNames[id]);
+		log_amx("[CHEAT DETECTOR]: Игрок %s использует чит %s!",username, g_sCheatNames[id]);
 #if defined ONCE_DETECT
-				remove_task(id);
+		remove_task(id);
 #endif
 #if defined BAN_CMD_DETECTED_FAKE
-				server_cmd(BAN_CMD_DETECTED_FAKE, get_user_userid(id), g_sCheatNames[id]);
+		server_cmd(BAN_CMD_DETECTED, get_user_userid(id), g_sCheatNames[id]);
+#endif
 #if defined DROP_AFTER_BAN
-				set_task(0.1, "drop_client_delayed", id);
+		set_task(0.1, "drop_client_delayed", id);
 #endif
-#endif
-			}
-#if defined DETECT_NONSTEAM_FILTERED_CVARS
-			else if (!g_bFiltered[id] && is_user_steam(id))
-			{
-				new username[33];
-				get_user_name(id,username,charsmax(username));
-				client_print_color(0, print_team_red, "^4[CHEAT DETECTOR]^3: Игрок^1 %s^3 возможно использует чит ^1%s^3! (с фейк кваром)",username, g_sCheatNames[id]);
-				log_amx("[CHEAT DETECTOR]: Игрок возможно %s использует чит %s c фейк кваром, значение квара : %s!",username, g_sCheatNames[id], g_sCvarName1Backup[id]);
-#if defined ONCE_DETECT
-				remove_task(id);
-#endif
-#if defined BAN_CMD_DETECTED_FAKE
-				server_cmd(BAN_CMD_POSSIBLE_FAKE, get_user_userid(id), g_sCheatNames[id]);
-#if defined DROP_AFTER_BAN
-				set_task(0.1, "drop_client_delayed", id);
-#endif
-#endif
-			}
-#endif
-		}
 	}
-	else if (!g_bInitialIsZero[id])
+#if defined DETECT_NONSTEAM_FILTERED_CVARS
+	else if (!g_bFiltered[id])
 	{
-		if(str_to_float(value) == float(rate_check_value))
+		new username[33];
+		get_user_name(id,username,charsmax(username));
+		if (is_user_steam(id))
 		{
-			// Если нет протектора на g_sTempServerCvar то...
-			new username[33];
-			get_user_name(id,username,charsmax(username));
-			client_print_color(0, print_team_red, "^4[CHEAT DETECTOR]^3: Игрок^1 %s^3 использует чит ^1%s^3!",username, g_sCheatNames[id]);
-			log_amx("[CHEAT DETECTOR]: Игрок %s использует чит %s!",username, g_sCheatNames[id]);
-#if defined ONCE_DETECT
-			remove_task(id);
-#endif
-#if defined BAN_CMD_DETECTED_FAKE
-			server_cmd(BAN_CMD_DETECTED, get_user_userid(id), g_sCheatNames[id]);
-#if defined DROP_AFTER_BAN
-			set_task(0.1, "drop_client_delayed", id);
-#endif
-#endif
-		}
-		else if (!g_bFiltered[id])
-		{
-			new username[33];
-			get_user_name(id,username,charsmax(username));
-			client_print_color(0,print_team_red, "^4[CHEAT DETECTOR]^3: Игрок^1 %s^3 возможно использует чит ^1%s^3!",username, g_sCheatNames[id]);
-			log_amx("[CHEAT DETECTOR]: Игрок %s возможно использует чит %s![99%%]",username, g_sCheatNames[id]);
+			client_print_color(0,print_team_red, "^4[CHEAT DETECTOR]^3: Игрок^1 %s^3 возможно использует чит ^1%s^3 для Steam!",username, g_sCheatNames[id]);
+			log_amx("[CHEAT DETECTOR]: Игрок %s возможно использует чит %s для Steam![99%%]",username, g_sCheatNames[id]);
 #if defined ONCE_DETECT
 			remove_task(id);
 #endif
 #if defined BAN_CMD_DETECTED_FAKE
 			server_cmd(BAN_CMD_POSSIBLE, get_user_userid(id), g_sCheatNames[id]);
+#endif
+
 #if defined DROP_AFTER_BAN
 			set_task(0.1, "drop_client_delayed", id);
 #endif
-#endif
+		}
+		else 
+		{
+			log_amx("[CHEAT DETECTOR]: Игрок %s зашел с протектором (cl_filterstuffcmd или кастомный) не позволяющим определить наличие чита.",username);
+			remove_task(id);
 		}
 	}
+#else 
+	log_amx("[CHEAT DETECTOR]: Игрок %s зашел с протектором (cl_filterstuffcmd или кастомный) не позволяющим определить наличие чита.",username);
+	remove_task(id);
+#endif
 }
 #if defined DROP_AFTER_BAN
 public drop_client_delayed(id)
 {
 	if (is_user_connected(id))
-    {
-        static cheat[64];
-        formatex(cheat, charsmax(cheat), "Cheat Detected: %s", g_sCheatNames[id]);
+	{
+		static cheat[64];
+		formatex(cheat, charsmax(cheat), "Cheat Detected: %s", g_sCheatNames[id]);
 		rh_drop_client(id, cheat);
-    }
+	}
 }
 #endif
 
