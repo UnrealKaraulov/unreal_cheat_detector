@@ -41,7 +41,7 @@
 //#define BAN_CMD_POSSIBLE "amx_ban 1000 #%d ^"%s HACK DETECTED POSSIBLE^""
 
 new const Plugin_sName[] = "Unreal Cheat Detector";
-new const Plugin_sVersion[] = "3.5";
+new const Plugin_sVersion[] = "3.6";
 new const Plugin_sAuthor[] = "Karaulov";
 
 
@@ -259,10 +259,18 @@ public check_protector_default(id, const cvar[], const value[])
 	WriteClientStuffText(id, "%s %d^n",g_sTempServerCvar,rate_check_value);
 	WriteClientStuffText(id, "%s %d^n",g_sTempServerCvar,rate_check_value);
 	
-	set_task(0.01,"check_protector_task",id)
+	RequestFrame("check_protector_task",id);
 }
 
 public check_protector_task(id)
+{
+	if (!is_user_connected(id))
+		return;
+
+	set_task(0.01,"check_protector_task2",id)
+}
+
+public check_protector_task2(id)
 {
 	if (!is_user_connected(id))
 		return;
