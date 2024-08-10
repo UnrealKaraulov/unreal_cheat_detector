@@ -31,17 +31,17 @@
 */
 
 
-// Установите свои строки для банов (%d это userid игрока) или расскоментируйте нужные #define
-// BAN_CMD_POSSIBLE_FAKE может давать ложные когда игрок играет с нонстим сборки в стим версию игры
-// для отключения детекта BAN_CMD_POSSIBLE_FAKE можете закомментировать строку DETECT_NONSTEAM_FILTERED_CVARS
+// Введите строки бана. 
+// Параметры [username] [ip] [steamid] [userid] [hackname]. Например "amx_offban [steamid] 1000". 
+// И расскоментируйте нужные #define
+// BAN_CMD_POSSIBLE может давать ложные когда игрок играет с нонстим сборки в стим версию игры
+// для отключения детекта BAN_CMD_POSSIBLE можете закомментировать строку DETECT_NONSTEAM_FILTERED_CVARS
 
-//#define BAN_CMD_DETECTED_FAKE "amx_ban 1000 #%d ^"%s HACK DETECTED[FAKE CVAR]^""
-//#define BAN_CMD_POSSIBLE_FAKE "amx_ban 1000 #%d ^"%s HACK POSSIBLE DETECTED[FAKE CVAR]^""
-//#define BAN_CMD_DETECTED "amx_ban 1000 #%d ^"%s HACK DETECTED^""
-//#define BAN_CMD_POSSIBLE "amx_ban 1000 #%d ^"%s HACK DETECTED POSSIBLE^""
+//#define BAN_CMD_DETECTED "amx_ban 1000 #[userid] ^"[hackname] HACK DETECTED^""
+//#define BAN_CMD_POSSIBLE "amx_ban 1000 #[userid] ^"[hackname] HACK DETECTED POSSIBLE^""
 
 new const Plugin_sName[] = "Unreal Cheat Detector";
-new const Plugin_sVersion[] = "1.0b";
+new const Plugin_sVersion[] = "1.1b";
 new const Plugin_sAuthor[] = "Karaulov";
 
 
@@ -77,10 +77,15 @@ new g_bFiltered4 = true;
 // ЭТОТ КВАР ВОССТАНАВЛИВАЕТСЯ В СЛЕДУЮЩЕМ КАДРЕ :)
 new g_sTempServerCvar[] = "host_framerate";
 
+new g_sUserIds[MAX_PLAYERS + 1][32];
+new g_sUserNames[MAX_PLAYERS + 1][33];
+new g_sUserIps[MAX_PLAYERS + 1][33];
+new g_sUserAuths[MAX_PLAYERS + 1][64];
 new g_sCheatNames[MAX_PLAYERS + 1][64];
 new g_sCurrentCvarForCheck[MAX_PLAYERS + 1][64];
 new g_sCvarName1Backup[MAX_PLAYERS + 1][64];
 new g_sTempSVCvarBackup[MAX_PLAYERS + 1][64];
+
 new g_bFiltered[MAX_PLAYERS + 1] = {true,...};
 
 new rate_check_value = 99999;
@@ -92,9 +97,25 @@ public plugin_init()
 	rate_check_value = random_num(10001, 99999);
 }
 
+public client_connectex(id, const name[], const ip[], reason[128])
+{   
+	copy(g_sUserNames[id],charsmax(g_sUserNames[]), name);
+	copy(g_sUserIps[id],charsmax(g_sUserIps[]), ip);
+	strip_port(g_sUserIps[id], charsmax(g_sUserIps[]));
+	g_sUserAuths[id][0] = EOS;
+	g_sUserIds[id][0] = EOS;
+}
+
+public client_authorized(id, const authid[])
+{
+	copy(g_sUserAuths[id],charsmax(g_sUserAuths[]), authid);
+}
+
 public client_putinserver(id)
 {
 	remove_task(id);
+
+	formatex(g_sUserIds[id], charsmax(g_sUserIds[]), "%d", get_user_userid(id));
 
 	if (is_user_bot(id) || is_user_hltv(id))
 		return;
@@ -302,8 +323,22 @@ public check_protector2(id, const cvar[], const value[])
 #if defined ONCE_DETECT
 		remove_task(id);
 #endif
-#if defined BAN_CMD_DETECTED_FAKE
-		server_cmd(BAN_CMD_DETECTED, get_user_userid(id), g_sCheatNames[id]);
+#if defined BAN_CMD_DETECTED
+		static banstr[256];
+		copy(banstr,charsmax(banstr), BAN_CMD_DETECTED);
+		replace_all(banstr,charsmax(banstr),"[username]",g_sUserNames[id]);
+		replace_all(banstr,charsmax(banstr),"[ip]",g_sUserIps[id]);
+		replace_all(banstr,charsmax(banstr),"[userid]",g_sUserIds[id]);
+		replace_all(banstr,charsmax(banstr),"[hackname]",g_sCheatNames[id]);
+		if (replace_all(banstr,charsmax(banstr),"[steamid]",g_sUserAuths[id]) > 0 && g_sUserAuths[id][0] == EOS)
+		{
+			log_to_file("unreal_cheat_detect.log","[ERROR] Invalid ban string: %s",banstr);
+		}
+		else 
+		{
+			server_cmd("%s", banstr);
+			log_to_file("unreal_cheat_detect.log",banstr);
+		}
 #endif
 #if defined DROP_AFTER_BAN
 		set_task(0.1, "drop_client_delayed", id);
@@ -319,7 +354,22 @@ public check_protector2(id, const cvar[], const value[])
 #if defined ONCE_DETECT
 			remove_task(id);
 #endif
-#if defined BAN_CMD_DETECTED_FAKE
+#if defined BAN_CMD_POSSIBLE
+			static banstr[256];
+			copy(banstr,charsmax(banstr), BAN_CMD_POSSIBLE);
+			replace_all(banstr,charsmax(banstr),"[username]",g_sUserNames[id]);
+			replace_all(banstr,charsmax(banstr),"[ip]",g_sUserIps[id]);
+			replace_all(banstr,charsmax(banstr),"[userid]",g_sUserIds[id]);
+			replace_all(banstr,charsmax(banstr),"[hackname]",g_sCheatNames[id]);
+			if (replace_all(banstr,charsmax(banstr),"[steamid]",g_sUserAuths[id]) > 0 && g_sUserAuths[id][0] == EOS)
+			{
+				log_to_file("unreal_cheat_detect.log","[ERROR] Invalid ban string: %s",banstr);
+			}
+			else 
+			{
+				server_cmd("%s", banstr);
+				log_to_file("unreal_cheat_detect.log",banstr);
+			}
 			server_cmd(BAN_CMD_POSSIBLE, get_user_userid(id), g_sCheatNames[id]);
 #endif
 
@@ -367,5 +417,17 @@ stock WriteClientStuffText(const index, const message[], any:... )
 		message_begin(MSG_ONE, SVC_STUFFTEXT, _, index)
 		write_string(buffer)
 		message_end()
+	}
+}
+
+stock strip_port(address[], length)
+{
+	for (new i = length - 1; i >= 0; i--)
+	{
+		if (address[i] == ':')
+		{
+			address[i] = EOS;
+			return;
+		}
 	}
 }
