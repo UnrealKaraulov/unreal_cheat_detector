@@ -51,8 +51,8 @@ new g_sCvarName1[] = "host_limitlocal";
 new g_sCheatName1[] = "HPP v6";
 new g_bFiltered1 = false;
 
-// Квар по умолчанию cl_righthand не защищен cl_filterstuffcmd и может изменяться
-// так что если квар не изменяется то значит стоит байпас на детект, новая версия это учитывает
+// Квар по умолчанию cl_righthand защищен cl_filterstuffcmd
+// Требуется дополнительная проверка наличия протектора cl_filterstuffcmd
 new g_sCvarName2[] = "cl_righthand";
 new g_sCheatName2[] = "INTERIUM";
 new g_bFiltered2 = true;
