@@ -6,39 +6,29 @@
 #include <amxmisc>
 
 
-
+// Выбросить после бана
 #define DROP_AFTER_BAN
-#define DETECT_NONSTEAM_FILTERED_CVARS
-
-#if defined DETECT_NONSTEAM_FILTERED_CVARS || defined DROP_AFTER_BAN
-#include <reapi>
-#endif
-
+// Обнаружить чит хпп с ложным кваром для Steam пользователей
+#define DETECT_STEAMONLY_UNSAFE_METHOD
+// Писать обнаружения в чат
+#define SHOW_IN_CHAT
 // Отключает множественный детект
 #define ONCE_DETECT
 
-/*
-   Этапы работы:
-
-	1. Обнаружить значение квара g_sCurrentCvarForCheck[id]
-	2. Проверить наличие протектора на g_sCurrentCvarForCheck[id]
-	3. Проверить наличие протектора
-	4. Выдать бан или предупреждение
-
-!Внимание мой способ детекта читов полностью универсален!
-!То есть этот способ можно использовать для обнаружение других читов если поменять квары на те что меняет чит!
-
-*/
+#if defined DETECT_STEAMONLY_UNSAFE_METHOD || defined DROP_AFTER_BAN
+#include <reapi>
+#endif
 
 
 // Введите строки бана. 
 // Параметры [username] [ip] [steamid] [userid] [hackname]. Например "amx_offban [steamid] 1000". 
 // И расскоментируйте нужные #define
 // BAN_CMD_POSSIBLE может давать ложные когда игрок играет с нонстим сборки в стим версию игры
-// для отключения детекта BAN_CMD_POSSIBLE можете закомментировать строку DETECT_NONSTEAM_FILTERED_CVARS
+// для отключения детекта BAN_CMD_POSSIBLE можете закомментировать строку DETECT_STEAMONLY_UNSAFE_METHOD
 
 //#define BAN_CMD_DETECTED "amx_ban 1000 #[userid] ^"[hackname] HACK DETECTED^""
 //#define BAN_CMD_POSSIBLE "amx_ban 1000 #[userid] ^"[hackname] HACK DETECTED POSSIBLE^""
+
 
 new const Plugin_sName[] = "Unreal Cheat Detector";
 new const Plugin_sVersion[] = "1.1b";
@@ -344,7 +334,7 @@ public check_protector2(id, const cvar[], const value[])
 		set_task(0.1, "drop_client_delayed", id);
 #endif
 	}
-#if defined DETECT_NONSTEAM_FILTERED_CVARS
+#if defined DETECT_STEAMONLY_UNSAFE_METHOD
 	else if (!g_bFiltered[id])
 	{
 		if (is_user_steam(id))
