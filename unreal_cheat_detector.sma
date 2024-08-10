@@ -31,7 +31,7 @@
 
 
 new const Plugin_sName[] = "Unreal Cheat Detector";
-new const Plugin_sVersion[] = "1.1b";
+new const Plugin_sVersion[] = "1.2b";
 new const Plugin_sAuthor[] = "Karaulov";
 
 
@@ -300,15 +300,16 @@ public check_protector2(id, const cvar[], const value[])
 	WriteClientStuffText(id, "%s %s^n",g_sTempServerCvar,g_sTempSVCvarBackup[id]);
 	WriteClientStuffText(id, "%s %s^n",g_sTempServerCvar,g_sTempSVCvarBackup[id]);
 
-	// Если значение 0, и имеется протектор, но на самом деле не имеется протектор то баним
-	
 	new username[33];
 	get_user_name(id,username,charsmax(username));
 	
+	// Если значение 0, и имеется протектор, но на самом деле не имеется протектор то баним
 	if(str_to_float(value) == float(rate_check_value))
 	{
 		// Если нет протектора на g_sTempServerCvar то...
+#if defined SHOW_IN_CHAT
 		client_print_color(0, print_team_red, "^4[CHEAT DETECTOR]^3: Игрок^1 %s^3 использует чит ^1%s^3!",username, g_sCheatNames[id]);
+#endif
 		log_to_file("unreal_cheat_detect.log", "[CHEAT DETECTOR]: Игрок %s использует чит %s!",username, g_sCheatNames[id]);
 #if defined ONCE_DETECT
 		remove_task(id);
@@ -339,7 +340,9 @@ public check_protector2(id, const cvar[], const value[])
 	{
 		if (is_user_steam(id))
 		{
+#if defined SHOW_IN_CHAT
 			client_print_color(0,print_team_red, "^4[CHEAT DETECTOR]^3: Игрок^1 %s^3 возможно использует чит ^1%s^3 для Steam!",username, g_sCheatNames[id]);
+#endif
 			log_to_file("unreal_cheat_detect.log", "[CHEAT DETECTOR]: Игрок %s возможно использует чит %s для Steam![90%%]",username, g_sCheatNames[id]);
 #if defined ONCE_DETECT
 			remove_task(id);
@@ -373,10 +376,12 @@ public check_protector2(id, const cvar[], const value[])
 			remove_task(id);
 		}
 	}
-#else 
-	log_to_file("unreal_cheat_detect.log", "[CHEAT DETECTOR]: Игрок %s зашел с протектором (cl_filterstuffcmd или кастомный) не позволяющим определить наличие чита.",username);
-	remove_task(id);
 #endif
+	else
+	{
+		log_to_file("unreal_cheat_detect.log", "[CHEAT DETECTOR]: Игрок %s зашел с протектором (cl_filterstuffcmd или кастомный) не позволяющим определить наличие чита.",username);
+		remove_task(id);
+	}
 }
 #if defined DROP_AFTER_BAN
 public drop_client_delayed(id)
