@@ -31,7 +31,7 @@
 
 
 new const Plugin_sName[] = "Unreal Cheat Detector";
-new const Plugin_sVersion[] = "1.2b";
+new const Plugin_sVersion[] = "1.3b";
 new const Plugin_sAuthor[] = "Karaulov";
 
 
@@ -65,7 +65,8 @@ new g_bFiltered4 = true;
 // Он должен восстанавливаться после рестарта, и не влиять на игровой процесс (на всякий случай)
 // Он должен быть защищен cl_filterstuffcmd
 // ЭТОТ КВАР ВОССТАНАВЛИВАЕТСЯ В СЛЕДУЮЩЕМ КАДРЕ :)
-new g_sTempServerCvar[] = "host_framerate";
+//new g_sTempServerCvar[] = "host_framerate"; false detect 'serverov' bad cs 16 build
+new g_sTempServerCvar[] = "cl_dlmax";
 
 new g_sUserIds[MAX_PLAYERS + 1][32];
 new g_sUserNames[MAX_PLAYERS + 1][33];
