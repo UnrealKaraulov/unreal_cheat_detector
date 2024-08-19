@@ -1,7 +1,3 @@
-// Внимание тестовая версия, на свой страх и страх использовать!
-// Внимание тестовая версия, на свой страх и страх использовать!
-// Внимание тестовая версия, на свой страх и страх использовать!
-
 #include <amxmodx>
 #include <amxmisc>
 
@@ -9,9 +5,11 @@
 // Выбросить после бана
 #define DROP_AFTER_BAN
 // Обнаружить чит хпп с ложным кваром для Steam пользователей
-#define DETECT_STEAMONLY_UNSAFE_METHOD
+//#define DETECT_STEAMONLY_UNSAFE_METHOD
 // Писать обнаружения в чат
-#define SHOW_IN_CHAT
+//#define SHOW_IN_CHAT
+// Писать в лог пользователей которых нельзя проверить
+//#define SHOW_PROTECTOR_IN_LOG
 // Отключает множественный детект
 #define ONCE_DETECT
 
@@ -20,18 +18,13 @@
 #endif
 
 
-// Введите строки бана. 
+// Введите строку бана. 
 // Параметры [username] [ip] [steamid] [userid] [hackname]. Например "amx_offban [steamid] 1000". 
-// И расскоментируйте нужные #define
-// BAN_CMD_POSSIBLE может давать ложные когда игрок играет с нонстим сборки в стим версию игры
-// для отключения детекта BAN_CMD_POSSIBLE можете закомментировать строку DETECT_STEAMONLY_UNSAFE_METHOD
 
 //#define BAN_CMD_DETECTED "amx_ban 1000 #[userid] ^"[hackname] HACK DETECTED^""
-//#define BAN_CMD_POSSIBLE "amx_ban 1000 #[userid] ^"[hackname] HACK DETECTED POSSIBLE^""
-
 
 new const Plugin_sName[] = "Unreal Cheat Detector";
-new const Plugin_sVersion[] = "1.3b";
+new const Plugin_sVersion[] = "1.4";
 new const Plugin_sAuthor[] = "Karaulov";
 
 
@@ -344,43 +337,28 @@ public check_protector2(id, const cvar[], const value[])
 #if defined SHOW_IN_CHAT
 			client_print_color(0,print_team_red, "^4[CHEAT DETECTOR]^3: Игрок^1 %s^3 возможно использует чит ^1%s^3 для Steam!",username, g_sCheatNames[id]);
 #endif
-			log_to_file("unreal_cheat_detect.log", "[CHEAT DETECTOR]: Игрок %s возможно использует чит %s для Steam![90%%]",username, g_sCheatNames[id]);
+			log_to_file("unreal_cheat_detect.log", "[CHEAT DETECTOR]: Игрок %s с читом %s для Steam!(если играет с чистого клиента)",username, g_sCheatNames[id]);
 #if defined ONCE_DETECT
 			remove_task(id);
 #endif
-#if defined BAN_CMD_POSSIBLE
-			static banstr[256];
-			copy(banstr,charsmax(banstr), BAN_CMD_POSSIBLE);
-			replace_all(banstr,charsmax(banstr),"[username]",g_sUserNames[id]);
-			replace_all(banstr,charsmax(banstr),"[ip]",g_sUserIps[id]);
-			replace_all(banstr,charsmax(banstr),"[userid]",g_sUserIds[id]);
-			replace_all(banstr,charsmax(banstr),"[hackname]",g_sCheatNames[id]);
-			if (replace_all(banstr,charsmax(banstr),"[steamid]",g_sUserAuths[id]) > 0 && g_sUserAuths[id][0] == EOS)
-			{
-				log_to_file("unreal_cheat_detect.log","[ERROR] Invalid ban string: %s",banstr);
-			}
-			else 
-			{
-				server_cmd("%s", banstr);
-				log_to_file("unreal_cheat_detect.log",banstr);
-			}
-			server_cmd(BAN_CMD_POSSIBLE, get_user_userid(id), g_sCheatNames[id]);
-#endif
-
 #if defined DROP_AFTER_BAN
 			set_task(0.1, "drop_client_delayed", id);
 #endif
 		}
 		else 
 		{
+#if defined SHOW_PROTECTOR_IN_LOG
 			log_to_file("unreal_cheat_detect.log", "[CHEAT DETECTOR]: Игрок %s зашел с протектором (cl_filterstuffcmd или кастомный) не позволяющим определить наличие чита.",username);
+#endif
 			remove_task(id);
 		}
 	}
 #endif
 	else
 	{
+#if defined SHOW_PROTECTOR_IN_LOG
 		log_to_file("unreal_cheat_detect.log", "[CHEAT DETECTOR]: Игрок %s зашел с протектором (cl_filterstuffcmd или кастомный) не позволяющим определить наличие чита.",username);
+#endif
 		remove_task(id);
 	}
 }
