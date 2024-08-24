@@ -26,7 +26,7 @@
 //#define BAN_CMD_DETECTED "amx_ban 1000 #[userid] ^"[hackname] HACK DETECTED^""
 
 new const Plugin_sName[] = "Unreal Cheat Detector";
-new const Plugin_sVersion[] = "1.5";
+new const Plugin_sVersion[] = "1.6";
 new const Plugin_sAuthor[] = "Karaulov";
 
 
