@@ -20,11 +20,11 @@
 
 // Введите строку бана. 
 // Параметры [username] [ip] [steamid] [userid] [hackname]. Например "amx_offban [steamid] 1000". 
-
+// Внимание при сильном лаге сервера во время проверки могут быть ложные!
 //#define BAN_CMD_DETECTED "amx_ban 1000 #[userid] ^"[hackname] HACK DETECTED^""
 
 new const Plugin_sName[] = "Unreal Cheat Detector";
-new const Plugin_sVersion[] = "1.4";
+new const Plugin_sVersion[] = "1.5";
 new const Plugin_sAuthor[] = "Karaulov";
 
 
@@ -83,6 +83,7 @@ public plugin_init()
 
 public client_connectex(id, const name[], const ip[], reason[128])
 {   
+	remove_task(id);
 	copy(g_sUserNames[id],charsmax(g_sUserNames[]), name);
 	copy(g_sUserIps[id],charsmax(g_sUserIps[]), ip);
 	strip_port(g_sUserIps[id], charsmax(g_sUserIps[]));
@@ -97,34 +98,31 @@ public client_authorized(id, const authid[])
 
 public client_putinserver(id)
 {
-	remove_task(id);
-
 	formatex(g_sUserIds[id], charsmax(g_sUserIds[]), "%d", get_user_userid(id));
-
 	if (is_user_bot(id) || is_user_hltv(id))
 		return;
 
 	// Запуск проверки в начале игры и где-нибудь через пару минут
 	// на наличие hpp чита
-	set_task(0.5, "init_hack_cvar1_check", id);
+	set_task(5.0, "init_hack_cvar1_check", id);
 	new Float:fTask2 = random_float(100.0, 300.0);
 	set_task(fTask2, "init_hack_cvar1_check", id);
 
 	// запускаем проверку спустя 10 секунд после первой
 	// что бы не было никаких коллизий
 	fTask2 += 10.0;
-	set_task(10.0, "init_hack_cvar2_check", id);
+	set_task(15.0, "init_hack_cvar2_check", id);
 	set_task(fTask2, "init_hack_cvar2_check", id);
 
 	// запускаем проверку спустя 10 секунд после первой
 	// что бы не было никаких коллизий
-	fTask2 += 10.0;
+	fTask2 += 20.0;
 	set_task(20.0, "init_hack_cvar3_check", id);
 	set_task(fTask2, "init_hack_cvar3_check", id);
 	
 	// запускаем проверку спустя 10 секунд после первой
 	// что бы не было никаких коллизий
-	fTask2 += 10.0;
+	fTask2 += 25.0;
 	set_task(30.0, "init_hack_cvar4_check", id);
 	set_task(fTask2, "init_hack_cvar4_check", id);
 }
@@ -216,7 +214,7 @@ public check_detect_cvar_defaultvalue(id, const cvar[], const value[])
 	}
 	
 	// Отложенный запуск проверки что бы чит успел сделать свои дела
-	set_task(0.11,"check_detect_cvar_value_task",id)
+	set_task(0.15,"check_detect_cvar_value_task",id)
 }
 
 // Отложенный запуск проверки что бы чит успел сделать свои дела
